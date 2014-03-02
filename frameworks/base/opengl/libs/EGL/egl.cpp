@@ -217,14 +217,10 @@ EGLImageKHR egl_get_image_for_current_context(EGLImageKHR image)
         return EGL_NO_IMAGE_KHR;
 
     egl_context_t const * const c = get_context(context);
-    if (c == NULL) // this should never happen, by construction
+    if (c == NULL) // this should never happen
         return EGL_NO_IMAGE_KHR;
 
-    egl_display_t* display = egl_display_t::get(c->dpy);
-    if (display == NULL) // this should never happen, by construction
-        return EGL_NO_IMAGE_KHR;
-
-    ImageRef _i(display, image);
+    ImageRef _i(image);
     if (!_i.get())
         return EGL_NO_IMAGE_KHR;
 
