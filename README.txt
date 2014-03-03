@@ -80,20 +80,9 @@ include/system/graphics.h
 
  
 ==================================================================
-Instructions to build this Graphics stack on Android ICS project:
+These sources where modifed by SpaceCaker@XDA-Developers.com
+Special thanks to Team BroadcomCM
 
-1. Check out a Android ICS (example: android-4.0.1_r1.1) workspace with the following sequence of commands:
-
-   repo init -u https://android.googlesource.com/platform/manifest -b android-4.0.1_r1.1
-   repo sync -j8
-
-2. Extract the content of this package (excludes this README.txt) in the root directory of the Android ICS workspace:
-
-3. Build the Android source tree with the following sequence of commands:
-
-   source build/envsetup.sh
-   lunch full-eng
-   make -j8 TARGET_DEVICE=generic_armv5
 
 
 
