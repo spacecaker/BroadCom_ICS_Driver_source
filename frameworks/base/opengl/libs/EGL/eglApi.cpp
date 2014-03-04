@@ -48,6 +48,7 @@
 using namespace android;
 
 // ----------------------------------------------------------------------------
+
 #define EGL_VERSION_HW_ANDROID  0x3143
 
 struct extention_map_t {
@@ -68,6 +69,8 @@ static const extention_map_t sExtentionMap[] = {
             (__eglMustCastToProperFunctionPointerType)&eglGetSystemTimeFrequencyNV },
     { "eglGetSystemTimeNV",
             (__eglMustCastToProperFunctionPointerType)&eglGetSystemTimeNV },
+    { "eglGetRenderBufferANDROID",
+            (__eglMustCastToProperFunctionPointerType)&eglGetRenderBufferANDROID },
 };
 
 // accesses protected by sExtensionMapMutex
@@ -856,6 +859,7 @@ __eglMustCastToProperFunctionPointerType eglGetProcAddress(const char *procname)
     addr = findProcAddress(procname, sExtentionMap, NELEM(sExtentionMap));
     if (addr) return addr;
 
+
     // this protects accesses to sGLExtentionMap and sGLExtentionSlot
     pthread_mutex_lock(&sExtensionMapMutex);
 
@@ -1439,6 +1443,26 @@ EGLBoolean eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute
 // ----------------------------------------------------------------------------
 // ANDROID extensions
 // ----------------------------------------------------------------------------
+
+/* ANDROID extensions entry-point go here */
+
+EGLClientBuffer eglGetRenderBufferANDROID(EGLDisplay dpy, EGLSurface draw)
+{
+    clearError();
+
+    egl_display_t const * const dp = validate_display(dpy);
+    if (!dp) return EGL_FALSE;
+
+    SurfaceRef _s(dp, draw);
+    if (!_s.get()) return setError(EGL_BAD_SURFACE, (EGLClientBuffer*)0);
+
+    egl_surface_t const * const s = get_surface(draw);
+    if (s->cnx->egl.eglGetRenderBufferANDROID) {
+        return s->cnx->egl.eglGetRenderBufferANDROID(
+                dp->disp[s->impl].dpy, s->surface);
+    }
+    return setError(EGL_BAD_DISPLAY, (EGLClientBuffer*)0);
+}
 
 // ----------------------------------------------------------------------------
 // NVIDIA extensions

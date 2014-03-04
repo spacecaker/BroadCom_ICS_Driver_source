@@ -97,9 +97,18 @@ GL_API void GL_APIENTRY glWeightPointerOESBounds(GLint size, GLenum type,
 
 #if USE_FAST_TLS_KEY && !CHECK_FOR_GL_ERRORS
 
+    #ifdef HAVE_TEGRA_ERRATA_657451
+        #define MUNGE_TLS(_tls) \
+            "bfi " #_tls ", " #_tls ", #20, #1 \n" \
+            "bic " #_tls ", " #_tls ", #1 \n"
+    #else
+        #define MUNGE_TLS(_tls) "\n"
+    #endif
+
     #ifdef HAVE_ARM_TLS_REGISTER
         #define GET_TLS(reg) \
-            "mrc p15, 0, " #reg ", c13, c0, 3 \n"
+            "mrc p15, 0, " #reg ", c13, c0, 3 \n" \
+            MUNGE_TLS(reg)
     #else
         #define GET_TLS(reg) \
                        "push   {r0,r1,r2,r3,lr}                  \n"           \
@@ -137,7 +146,7 @@ GL_API void GL_APIENTRY glWeightPointerOESBounds(GLint size, GLenum type,
     
         #define CHECK_GL_ERRORS(_api) \
             do { GLint err = glGetError(); \
-                ALOGE_IF(err != GL_NO_ERROR, "%s failed (0x%04X)", #_api, err); \
+                LOGE_IF(err != GL_NO_ERROR, "%s failed (0x%04X)", #_api, err); \
             } while(false);
 
     #else

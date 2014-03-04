@@ -154,6 +154,7 @@ void DisplayHardware::init(uint32_t dpy)
 #warning "refresh rate set via makefile to REFRESH_RATE"
 #endif
 
+
 /* FIXME: this is a temporary HACK until we are able to report the refresh rate
  * properly from the HAL. The WindowManagerService now relies on this value.
  */
@@ -185,6 +186,17 @@ void DisplayHardware::init(uint32_t dpy)
             LOGW("H/W composition disabled");
             attribs[2] = EGL_CONFIG_CAVEAT;
             attribs[3] = EGL_SLOW_CONFIG;
+#ifdef QCOM_HARDWARE
+        } else {
+            // We have hardware composition enabled. Check the composition type
+            if (property_get("debug.composition.type", property, NULL) > 0) {
+                if ((strncmp(property, "c2d", 3) == 0) ||
+                    (strncmp(property, "dyn", 3) == 0))
+                    mFlags |= C2D_COMPOSITION;
+                else if ((strncmp(property, "mdp", 3)) == 0)
+                    mFlags |= MDP_COMPOSITION;
+            }
+#endif
         }
     }
 
@@ -196,8 +208,12 @@ void DisplayHardware::init(uint32_t dpy)
     eglGetConfigs(display, NULL, 0, &numConfigs);
 
     EGLConfig config = NULL;
+#ifdef FORCE_EGL_CONFIG
+    config = (EGLConfig)FORCE_EGL_CONFIG;
+#else
     err = selectConfigForPixelFormat(display, attribs, format, &config);
     LOGE_IF(err, "couldn't find an EGLConfig matching the screen format");
+#endif
     
     EGLint r,g,b,a;
     eglGetConfigAttrib(display, config, EGL_RED_SIZE,   &r);
@@ -296,7 +312,6 @@ void DisplayHardware::init(uint32_t dpy)
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &mMaxTextureSize);
     glGetIntegerv(GL_MAX_VIEWPORT_DIMS, mMaxViewportDims);
 
-
     LOGI("EGL informations:");
     LOGI("# of configs : %d", numConfigs);
     LOGI("vendor    : %s", extensions.getEglVendor());
@@ -392,6 +407,10 @@ void DisplayHardware::flip(const Region& dirty) const
     if (mHwc->initCheck() == NO_ERROR) {
         mHwc->commit();
     } else {
+#ifdef STE_HARDWARE
+        // Make sure the swapbuffer call is done in sync
+        mNativeWindow->compositionComplete();
+#endif
         eglSwapBuffers(dpy, surface);
     }
     checkEGLErrors("eglSwapBuffers");
@@ -415,3 +434,10 @@ void DisplayHardware::dump(String8& res) const
 {
     mNativeWindow->dump(res);
 }
+
+#ifdef QCOM_HDMI_OUT
+void DisplayHardware::orientationChanged(int orientation) const
+{
+    mNativeWindow->orientationChanged(EVENT_ORIENTATION_CHANGE, orientation);
+}
+#endif

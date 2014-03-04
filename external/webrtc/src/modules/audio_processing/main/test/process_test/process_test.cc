@@ -10,7 +10,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#ifdef WEBRTC_ANDROID
 #include <sys/stat.h>
+#endif
 
 #include "tick_util.h"
 #include "gtest/gtest.h"

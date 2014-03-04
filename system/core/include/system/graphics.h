@@ -84,7 +84,7 @@ enum {
      *   cb_offset = y_size + c_size
      *
      */
-//    HAL_PIXEL_FORMAT_YV12   = 0x32315659, // YCrCb 4:2:0 Planar
+    //HAL_PIXEL_FORMAT_YV12   = 0x32315659, // YCrCb 4:2:0 Planar
 
 
 

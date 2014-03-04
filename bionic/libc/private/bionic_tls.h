@@ -133,9 +133,7 @@ extern int __set_tls(void *ptr);
  /* The kernel provides the address of the TLS at a fixed
   * address of the magic page too.
   */
-/* #      define __get_tls() ( *((volatile void **) 0xffff0ff0) ) */
-  typedef volatile void* (__kernel_get_tls_t)(void);
-#    define __get_tls() (*(__kernel_get_tls_t *)0xffff0fe0)()
+#      define __get_tls() ( *((volatile void **) 0xffff0ff0) )
 #    endif
 #  endif /* !LIBC_STATIC */
 #else /* !ARM */

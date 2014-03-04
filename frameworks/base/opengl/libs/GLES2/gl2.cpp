@@ -43,9 +43,18 @@ using namespace android;
 
 #if USE_FAST_TLS_KEY
 
+    #ifdef HAVE_TEGRA_ERRATA_657451
+        #define MUNGE_TLS(_tls) \
+            "bfi " #_tls ", " #_tls ", #20, #1 \n" \
+            "bic " #_tls ", " #_tls ", #1 \n"
+    #else
+        #define MUNGE_TLS(_tls) "\n"
+    #endif
+
     #ifdef HAVE_ARM_TLS_REGISTER
         #define GET_TLS(reg) \
-            "mrc p15, 0, " #reg ", c13, c0, 3 \n"
+            "mrc p15, 0, " #reg ", c13, c0, 3 \n" \
+            MUNGE_TLS(reg)
     #else
         #define GET_TLS(reg) \
                        "push   {r0,r1,r2,r3,lr}                  \n"           \
@@ -88,7 +97,7 @@ using namespace android;
         _c->_api(__VA_ARGS__); \
         GLenum status = GL_NO_ERROR; \
         while ((status = glGetError()) != GL_NO_ERROR) { \
-            ALOGD("[" #_api "] 0x%x", status); \
+            LOGD("[" #_api "] 0x%x", status); \
         }
 
 #else
